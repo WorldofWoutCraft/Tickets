@@ -26,9 +26,10 @@ public class ReportCommand implements CommandExecutor {
             }
             String desc = "";
             for(String arg : args){
-                desc += " " + arg;
+                desc += arg + " ";
             }
             Main.getManager().createTicket(p, desc, TicketType.REPORT);
+            sender.sendMessage(Vars.tag + "Report ticket created! Now just wait for us to contact you :)");
             return true;
         }
         return false;

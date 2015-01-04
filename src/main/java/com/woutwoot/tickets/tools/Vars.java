@@ -11,7 +11,10 @@ public class Vars {
     public static final String tag = ChatColor.DARK_RED + "[Tickets] " + ChatColor.GOLD;
 
     public static String getTitle(String tickets) {
-        int maxLength = 54;
+        int maxLength = 55;
+        if(tickets.contains("i") || tickets.contains("l") || tickets.contains(".")){
+            maxLength++;
+        }
         int textLength = tickets.length() + 2;
         int sideChars = (maxLength - textLength) / 2;
 
@@ -22,6 +25,15 @@ public class Vars {
 
         String title = side + " " + tickets + " " + side;
         return title;
+    }
+
+    public static String getEndLine() {
+        int maxLength = 51;
+        String line = "";
+        for (int i = 0; i < maxLength; i++){
+            line += "-";
+        }
+        return line;
     }
 
     public static String trimToMax(String s) {

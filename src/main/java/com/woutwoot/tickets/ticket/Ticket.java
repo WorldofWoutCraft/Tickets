@@ -2,18 +2,20 @@ package com.woutwoot.tickets.ticket;
 
 import com.woutwoot.tickets.TicketsException;
 import com.woutwoot.tickets.tools.Vars;
+import mkremins.fanciful.FancyMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
  * @author woutwoot
  *         Created by on 1/01/2015 - 22:00.
  */
-public class Ticket {
+public class Ticket implements Comparable<Ticket>{
 
     private TicketStatus status = TicketStatus.NEW;
     private TicketType type = TicketType.GENERAL;
@@ -24,11 +26,12 @@ public class Ticket {
     private UUID ownerUUID;
     private String ownerName;
 
-    private List<UUID> solvers = new ArrayList<>();
+    private Set<UUID> solvers = new HashSet<>();
     private Map<Date, String> comments = new HashMap<>();
 
     private Date dateAsked = new Date();
     private Date dateClosed = null;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
     //-5 low, 5 high (Standard = 0)
     private int priority;
@@ -101,7 +104,7 @@ public class Ticket {
         return ownerName;
     }
 
-    public List<UUID> getSolvers() {
+    public Set<UUID> getSolvers() {
         return solvers;
     }
 
@@ -171,15 +174,43 @@ public class Ticket {
     }
 
     public void sendInfo(CommandSender sender) {
-        sender.sendMessage(ChatColor.DARK_RED + Vars.getTitle("Ticket #" + getId()));
-        sender.sendMessage(ChatColor.GOLD + "Creator: " + getOwnerName());
-        sender.sendMessage(ChatColor.GOLD + "Create date: " + getDateAsked());
-        sender.sendMessage(ChatColor.GOLD + "Description: " + getDescription());
-        sender.sendMessage(ChatColor.GOLD + "Status: " + getStatus());
-        sender.sendMessage(ChatColor.GOLD + "Type: " + getType());
-        sender.sendMessage(ChatColor.DARK_RED + Vars.getTitle("Comments"));
+        ChatColor red = ChatColor.DARK_RED;
+        ChatColor gold = ChatColor.GOLD;
+
+        sender.sendMessage(red + Vars.getTitle("Ticket #" + getId()));
+        sender.sendMessage(gold + "Creator: " + getOwnerName());
+        sender.sendMessage(gold + "Create date: " + dateFormat.format(getDateAsked()));
+        sender.sendMessage(gold + "Description: " + getDescription());
+        sender.sendMessage(gold + "Status: " + getStatus());
+        sender.sendMessage(gold + "Type: " + getType());
+        sender.sendMessage(red + Vars.getTitle("Comments"));
         for(Date d : comments.keySet()){
-            sender.sendMessage(ChatColor.DARK_RED + "" + d + " - " + ChatColor.GOLD + comments.get(d));
+            sender.sendMessage(red + "" + dateFormat.format(d) + " - " + gold + comments.get(d));
         }
+        sender.sendMessage(red + Vars.getTitle("Actions"));
+        FancyMessage act = new FancyMessage("TELEPORT ");
+        act.color(gold).command("/ticket tp " + getId());
+        act.then("TAKE ").color(gold).command("/ticket take " + getId());
+        act.then("COMMENT ").color(gold).suggest("/tck c " + getId() + " comment");
+        act.then("CLOSE ").color(gold).command("/ticket close " + getId());
+        act.then("DELETE ").color(gold).suggest("/ticket delete " + getId());
+        act.send(sender);
+        sender.sendMessage(red + Vars.getEndLine());
+    }
+
+    @Override
+    public int compareTo(Ticket t) {
+        if(t != null){
+            return dateAsked.compareTo(t.dateAsked);
+        }
+        return 0;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void addSolver(Player player) {
+        solvers.add(player.getUniqueId());
     }
 }

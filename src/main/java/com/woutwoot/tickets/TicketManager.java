@@ -5,14 +5,13 @@ import com.woutwoot.tickets.ticket.TicketStatus;
 import com.woutwoot.tickets.ticket.TicketType;
 import com.woutwoot.tickets.tools.Vars;
 import mkremins.fanciful.FancyMessage;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author woutwoot
@@ -22,6 +21,7 @@ public class TicketManager {
 
     private Map<Integer, Ticket> tickets = new HashMap<>();
     private int currentID = 1;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
     public TicketManager(){
         //TODO: Make this load and save from and to config.
@@ -123,18 +123,34 @@ public class TicketManager {
         //TODO: Load from DB
     }
 
-    public void sendInfo(int id, CommandSender sender) {
+    public void sendInfo(int id, CommandSender sender) throws TicketsException {
         Ticket t = getTicket(id);
         t.sendInfo(sender);
     }
 
-    public void sendList(CommandSender sender) {
-        sender.sendMessage(ChatColor.DARK_RED + Vars.getTitle("List of tickets"));
-        for(Ticket t : tickets.values()){
+    public void sendFullList(CommandSender sender) {
+        ChatColor r = ChatColor.DARK_RED;
+        sender.sendMessage(r + Vars.getTitle("List of tickets"));
+        for(Ticket t : getTicketsListFIFO()){
             FancyMessage msg = new FancyMessage();
-            msg.text(ChatColor.GOLD + Vars.trimToMax("- #" + t.getId() + "" + t.getStatus() + " -" + t.getDescription()));
-            msg.tooltip(ChatColor.AQUA + "Created by: ", t.getOwnerName(), ChatColor.AQUA + "Description: ", t.getDescription());
+            msg.color(ChatColor.GOLD);
+            msg.text(Vars.trimToMax("- # " + t.getId() + "" + t.getStatus() + " " + t.getType() + " - " + t.getDescription()));
+            msg.tooltip(ChatColor.AQUA + "Created by: ", " " + t.getOwnerName(), ChatColor.AQUA + "Description: ", " " + WordUtils.wrap(t.getDescription(), 40, "\n ", true));
+            msg.command("/ticket info " + t.getId());
             msg.send(sender);
         }
+        sender.sendMessage(r + Vars.getEndLine());
+    }
+
+    public List<Ticket> getTicketsListFIFO(){
+        List list = new LinkedList();
+        list.addAll(tickets.values());
+        Collections.sort(list);
+        return list;
+    }
+
+    public void takeTicket(int id, Player sender) throws TicketsException {
+        Ticket t = getTicket(id);
+        t.addSolver(sender);
     }
 }

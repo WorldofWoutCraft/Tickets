@@ -29,6 +29,7 @@ public class QuestionCommand implements CommandExecutor {
                 desc += arg + " ";
             }
             Main.getManager().createTicket(p, desc, TicketType.QUESTION);
+            sender.sendMessage(Vars.tag + "Question ticket created! Now just wait for us to contact you :)");
             return true;
         }
         return false;

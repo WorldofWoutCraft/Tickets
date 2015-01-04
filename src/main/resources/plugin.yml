@@ -7,7 +7,7 @@
  commands:
    ticket:
       description: Main Tickets command.
-      aliases: [tck, tick, tk]
+      aliases: [tickets, tck, tick, tk]
       usage: Syntax error!
    report:
       description: Command to instantly create a ticket for griefing.
