@@ -1,16 +1,17 @@
 package com.woutwoot.tickets;
 
+import com.woutwoot.tickets.events.TicketCreateEvent;
 import com.woutwoot.tickets.ticket.Ticket;
 import com.woutwoot.tickets.ticket.TicketStatus;
 import com.woutwoot.tickets.ticket.TicketType;
 import com.woutwoot.tickets.tools.Vars;
 import mkremins.fanciful.FancyMessage;
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -21,7 +22,6 @@ public class TicketManager {
 
     private Map<Integer, Ticket> tickets = new HashMap<>();
     private int currentID = 1;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
     public TicketManager(){
         //TODO: Make this load and save from and to config.
@@ -49,6 +49,11 @@ public class TicketManager {
             ticket.setType(type);
         }
         this.tickets.put(currentID, ticket);
+
+        //Call custom event
+        TicketCreateEvent event = new TicketCreateEvent(owner, ticket);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+
         currentID++;
     }
 
@@ -78,6 +83,12 @@ public class TicketManager {
         return ticketsList;
     }
 
+    /**
+     * Gets a ticket by id.
+     * @param id
+     * @return
+     * @throws TicketsException
+     */
     public Ticket getTicket(int id) throws TicketsException {
         Ticket t = this.tickets.get(id);
         if(t == null){
@@ -96,20 +107,32 @@ public class TicketManager {
         t.close(closer);
     }
 
-    public void changeTicketState(int id, TicketStatus status, String changer) throws TicketsException {
-        Ticket t = getTicket(id);
-        t.changeStatus(status, changer);
-    }
-
+    /**
+     * Completely deletes a ticket from the database. Can be used to remove spam.
+     * @param id
+     * @throws TicketsException
+     */
     public void deleteTicket(int id) throws TicketsException {
         tickets.remove(id);
     }
 
+    /**
+     * Adds a comment to a ticket.
+     * @param id
+     * @param comment
+     * @throws TicketsException
+     */
     public void addComment(int id, String comment) throws TicketsException {
         Ticket t = getTicket(id);
-        t.addComment("comment");
+        t.addComment(comment);
     }
 
+    /**
+     * Sets the priority for a ticket.
+     * @param id
+     * @param priority
+     * @throws TicketsException
+     */
     public void setTicketPriority(int id, int priority) throws TicketsException {
         Ticket t = getTicket(id);
         t.setPriority(priority);
@@ -123,11 +146,21 @@ public class TicketManager {
         //TODO: Load from DB
     }
 
+    /**
+     * Sends information about a ticket to the sender.
+     * @param id
+     * @param sender
+     * @throws TicketsException
+     */
     public void sendInfo(int id, CommandSender sender) throws TicketsException {
         Ticket t = getTicket(id);
         t.sendInfo(sender);
     }
 
+    /**
+     * Sends chat message with a ticket list (all tickets) to sender.
+     * @param sender
+     */
     public void sendFullList(CommandSender sender) {
         ChatColor r = ChatColor.DARK_RED;
         sender.sendMessage(r + Vars.getTitle("List of tickets"));
@@ -142,6 +175,10 @@ public class TicketManager {
         sender.sendMessage(r + Vars.getEndLine());
     }
 
+    /**
+     * Gets a list of tickets. Ordered by FIFO.
+     * @return
+     */
     public List<Ticket> getTicketsListFIFO(){
         List list = new LinkedList();
         list.addAll(tickets.values());
@@ -149,8 +186,37 @@ public class TicketManager {
         return list;
     }
 
+    /**
+     * Assigns this ticket to a staff member. One ticket can be handled by one or more staff members.
+     * @param id
+     * @param sender
+     * @throws TicketsException
+     */
     public void takeTicket(int id, Player sender) throws TicketsException {
         Ticket t = getTicket(id);
         t.addSolver(sender);
+        if(t.getStatus() == TicketStatus.NEW){
+            t.changeStatus(TicketStatus.ASSIGNED_TO_STAFF, sender.getName());
+        }
+    }
+
+    /**
+     * Sends chat message with a ticket list (only open) to sender.
+     * @param sender
+     */
+    public void sendList(CommandSender sender) {
+        ChatColor r = ChatColor.DARK_RED;
+        sender.sendMessage(r + Vars.getTitle("List of tickets"));
+        for(Ticket t : getTicketsListFIFO()){
+            if(t.getStatus() != TicketStatus.CLOSED && t.getStatus() != TicketStatus.REJECTED){
+                FancyMessage msg = new FancyMessage();
+                msg.color(ChatColor.GOLD);
+                msg.text(Vars.trimToMax("- # " + t.getId() + "" + t.getStatus() + " " + t.getType() + " - " + t.getDescription()));
+                msg.tooltip(ChatColor.AQUA + "Created by: ", " " + t.getOwnerName(), ChatColor.AQUA + "Description: ", " " + WordUtils.wrap(t.getDescription(), 40, "\n ", true));
+                msg.command("/ticket info " + t.getId());
+                msg.send(sender);
+            }
+        }
+        sender.sendMessage(r + Vars.getEndLine());
     }
 }

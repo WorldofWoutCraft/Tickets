@@ -46,8 +46,10 @@ public class TicketCommand implements CommandExecutor {
                     }
                 }
             }else if(args.length == 1){
-                if(args[0].equalsIgnoreCase("list")){
+                if(args[0].equalsIgnoreCase("listall")){
                     Main.getManager().sendFullList(sender);
+                }if(args[0].equalsIgnoreCase("list")){
+                    Main.getManager().sendList(sender);
                 }
             }else if(args.length > 2){
                 if(args[0].equalsIgnoreCase("comment") || args[0].equalsIgnoreCase("c")) {

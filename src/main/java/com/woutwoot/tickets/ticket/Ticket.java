@@ -8,7 +8,6 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -27,11 +26,10 @@ public class Ticket implements Comparable<Ticket>{
     private String ownerName;
 
     private Set<UUID> solvers = new HashSet<>();
-    private Map<Date, String> comments = new HashMap<>();
+    private Map<Date, String> comments = new TreeMap<>();
 
     private Date dateAsked = new Date();
     private Date dateClosed = null;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
     //-5 low, 5 high (Standard = 0)
     private int priority;
@@ -131,6 +129,8 @@ public class Ticket implements Comparable<Ticket>{
         this.setStatus(status);
         if(status == TicketStatus.CLOSED){
             addComment("Ticket closed by " + changer + ".");
+        }else if(status == TicketStatus.ASSIGNED_TO_STAFF){
+            addComment("Ticket assigned to " + changer + ".");
         }else{
             addComment("Status changed to " + status.toString() + " by " + changer + ".");
         }
@@ -179,13 +179,13 @@ public class Ticket implements Comparable<Ticket>{
 
         sender.sendMessage(red + Vars.getTitle("Ticket #" + getId()));
         sender.sendMessage(gold + "Creator: " + getOwnerName());
-        sender.sendMessage(gold + "Create date: " + dateFormat.format(getDateAsked()));
+        sender.sendMessage(gold + "Create date: " + Vars.dateFormat.format(getDateAsked()));
         sender.sendMessage(gold + "Description: " + getDescription());
         sender.sendMessage(gold + "Status: " + getStatus());
         sender.sendMessage(gold + "Type: " + getType());
         sender.sendMessage(red + Vars.getTitle("Comments"));
         for(Date d : comments.keySet()){
-            sender.sendMessage(red + "" + dateFormat.format(d) + " - " + gold + comments.get(d));
+            sender.sendMessage(red + "" + Vars.dateFormat.format(d) + " - " + gold + comments.get(d));
         }
         sender.sendMessage(red + Vars.getTitle("Actions"));
         FancyMessage act = new FancyMessage("TELEPORT ");
