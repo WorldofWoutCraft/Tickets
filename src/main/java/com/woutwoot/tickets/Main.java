@@ -3,6 +3,9 @@ package com.woutwoot.tickets;
 import com.woutwoot.tickets.commands.QuestionCommand;
 import com.woutwoot.tickets.commands.ReportCommand;
 import com.woutwoot.tickets.commands.TicketCommand;
+import com.woutwoot.tickets.listeners.TicketCreateListener;
+import com.woutwoot.tickets.tasks.YourTicketsTask;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -13,10 +16,13 @@ public class Main extends JavaPlugin {
 
     private static Main instance;
     private static TicketManager manager;
+    private static TicketCreateListener ticketCreateListener = new TicketCreateListener();
 
     private TicketCommand ticketCommand = new TicketCommand();
     private ReportCommand reportCommand = new ReportCommand();
     private QuestionCommand questionCommand = new QuestionCommand();
+
+    private YourTicketsTask yourTicketsTask = new YourTicketsTask();
 
     @Override
     public void onEnable(){
@@ -26,6 +32,8 @@ public class Main extends JavaPlugin {
         this.getCommand("report").setExecutor(reportCommand);
         this.getCommand("question").setExecutor(questionCommand);
         manager.loadTickets();
+        this.getServer().getPluginManager().registerEvents(ticketCreateListener, this);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, yourTicketsTask, 200L, 240L);
     }
 
     @Override

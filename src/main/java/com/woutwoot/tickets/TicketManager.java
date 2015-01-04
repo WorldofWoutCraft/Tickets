@@ -207,16 +207,45 @@ public class TicketManager {
     public void sendList(CommandSender sender) {
         ChatColor r = ChatColor.DARK_RED;
         sender.sendMessage(r + Vars.getTitle("List of tickets"));
-        for(Ticket t : getTicketsListFIFO()){
-            if(t.getStatus() != TicketStatus.CLOSED && t.getStatus() != TicketStatus.REJECTED){
+        for(Ticket t : getTicketsForPlayer((Player) sender)){
                 FancyMessage msg = new FancyMessage();
                 msg.color(ChatColor.GOLD);
                 msg.text(Vars.trimToMax("- # " + t.getId() + "" + t.getStatus() + " " + t.getType() + " - " + t.getDescription()));
                 msg.tooltip(ChatColor.AQUA + "Created by: ", " " + t.getOwnerName(), ChatColor.AQUA + "Description: ", " " + WordUtils.wrap(t.getDescription(), 40, "\n ", true));
                 msg.command("/ticket info " + t.getId());
                 msg.send(sender);
-            }
         }
         sender.sendMessage(r + Vars.getEndLine());
+    }
+
+    public boolean isTicketAvailable(Player p) {
+        for(Ticket t : tickets.values()){
+            if(t.getStatus() == TicketStatus.NEW || t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF){
+                if(t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF){
+                    if(t.getSolvers().contains(p.getUniqueId())){
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public List<Ticket> getTicketsForPlayer(Player p) {
+        List<Ticket> list = new ArrayList<>();
+        for(Ticket t : tickets.values()){
+            if(t.getStatus() == TicketStatus.NEW || t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF){
+                if(t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF){
+                    if(t.getSolvers().contains(p.getUniqueId())){
+                        list.add(t);
+                    }
+                } else {
+                    list.add(t);
+                }
+            }
+        }
+        return list;
     }
 }

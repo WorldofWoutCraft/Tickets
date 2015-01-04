@@ -122,6 +122,12 @@ public class Ticket implements Comparable<Ticket>{
         return priority;
     }
 
+    /**
+     * Changes the status for this ticket and logs a message to the comments section.
+     * @param status
+     * @param changer
+     * @throws TicketsException
+     */
     public void changeStatus(TicketStatus status, String changer) throws TicketsException {
         if(status == null || changer == null || changer.isEmpty()){
             throw new TicketsException("Can't change status. (null?)");
@@ -175,6 +181,7 @@ public class Ticket implements Comparable<Ticket>{
 
     public void sendInfo(CommandSender sender) {
         ChatColor red = ChatColor.DARK_RED;
+        ChatColor lightRed = ChatColor.RED;
         ChatColor gold = ChatColor.GOLD;
 
         sender.sendMessage(red + Vars.getTitle("Ticket #" + getId()));
@@ -190,10 +197,11 @@ public class Ticket implements Comparable<Ticket>{
         sender.sendMessage(red + Vars.getTitle("Actions"));
         FancyMessage act = new FancyMessage("TELEPORT ");
         act.color(gold).command("/ticket tp " + getId());
-        act.then("TAKE ").color(gold).command("/ticket take " + getId());
+        act.then("TAKE ").color(lightRed).command("/ticket take " + getId());
         act.then("COMMENT ").color(gold).suggest("/tck c " + getId() + " comment");
-        act.then("CLOSE ").color(gold).command("/ticket close " + getId());
+        act.then("CLOSE ").color(lightRed).command("/ticket close " + getId());
         act.then("DELETE ").color(gold).suggest("/ticket delete " + getId());
+        act.then("NEED MORE INFO ").color(lightRed).suggest("/ticket delete " + getId());
         act.send(sender);
         sender.sendMessage(red + Vars.getEndLine());
     }

@@ -21,10 +21,12 @@ public class TicketCreateListener implements Listener {
     @EventHandler
     public void onTiketCreate(TicketCreateEvent event){
         for(Player p : getOnlineOps()){
-            FancyMessage msg = new FancyMessage(Vars.tag + "A new ticket was created! Click here to view the ticket.");
-            msg.tooltip(ChatColor.GOLD + "Click here to view ticket.");
-            msg.command("/ticket info " + event.getTicket().getId());
-            msg.send(p);
+            if(!p.equals(event.getPlayer())) {
+                FancyMessage msg = new FancyMessage(Vars.tag + "A new ticket was created! Click here to view the ticket.");
+                msg.tooltip(ChatColor.GOLD + "Click here to view ticket.");
+                msg.command("/ticket info " + event.getTicket().getId());
+                msg.send(p);
+            }
         }
     }
 
