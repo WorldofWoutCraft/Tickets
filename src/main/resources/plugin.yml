@@ -1,0 +1,19 @@
+ name: Tickets
+ version: 1.0
+ description: Manage problems and keep it clean.
+ author: woutwoot
+ website: http://woutwoot.com/tickets
+ main: com.woutwoot.tickets.Main
+ commands:
+   ticket:
+      description: Main Tickets command.
+      aliases: [tck, tick, tk]
+      usage: Syntax error!
+   report:
+      description: Command to instantly create a ticket for griefing.
+      aliases: [rep, grief, griefing, griefed]
+      usage: Syntax error!
+   question:
+      description: Command to instantly create a ticket for a question.
+      aliases: [q, qu, qst]
+      usage: Syntax error!
