@@ -4,6 +4,7 @@ import com.woutwoot.tickets.ticket.Ticket;
 import com.woutwoot.tickets.ticket.TicketStatus;
 import com.woutwoot.tickets.ticket.TicketType;
 import com.woutwoot.tickets.tools.Vars;
+import mkremins.fanciful.FancyMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -130,7 +131,10 @@ public class TicketManager {
     public void sendList(CommandSender sender) {
         sender.sendMessage(ChatColor.DARK_RED + Vars.getTitle("List of tickets"));
         for(Ticket t : tickets.values()){
-            sender.sendMessage(ChatColor.GOLD + Vars.trimToMax("- #" + t.getId() + "" + t.getStatus() + " -" + t.getDescription()));
+            FancyMessage msg = new FancyMessage();
+            msg.text(ChatColor.GOLD + Vars.trimToMax("- #" + t.getId() + "" + t.getStatus() + " -" + t.getDescription()));
+            msg.tooltip(ChatColor.AQUA + "Created by: ", t.getOwnerName(), ChatColor.AQUA + "Description: ", t.getDescription());
+            msg.send(sender);
         }
     }
 }
