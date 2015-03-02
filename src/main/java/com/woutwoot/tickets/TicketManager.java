@@ -1,5 +1,6 @@
 package com.woutwoot.tickets;
 
+import com.woutwoot.tickets.db.TicketDB;
 import com.woutwoot.tickets.events.TicketCreateEvent;
 import com.woutwoot.tickets.ticket.Ticket;
 import com.woutwoot.tickets.ticket.TicketStatus;
@@ -20,6 +21,7 @@ import java.util.*;
  */
 public class TicketManager {
 
+    TicketDB ticketDB = new TicketDB();
     private Map<Integer, Ticket> tickets = new HashMap<>();
     private int currentID = 1;
 
@@ -139,11 +141,11 @@ public class TicketManager {
     }
 
     public void saveTickets() {
-        //TODO: Save to DB
+        ticketDB.saveTickets(tickets);
     }
 
     public void loadTickets() {
-        //TODO: Load from DB
+        tickets = ticketDB.loadTickets();
     }
 
     /**
