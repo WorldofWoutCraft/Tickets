@@ -2,10 +2,7 @@ package com.woutwoot.tickets.tools;
 
 import org.bukkit.plugin.Plugin;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 /**
  * Abstract Database class, serves as a base for any connection method (MySQL,
@@ -63,7 +60,14 @@ public abstract class SQLDatabase {
 	 * @return Connection with the database, null if none
 	 */
 	public Connection getConnection() {
-		return connection;
+        try {
+            if (!checkConnection()) {
+                openConnection();
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return connection;
 	}
 
 	/**
@@ -133,4 +137,15 @@ public abstract class SQLDatabase {
 
 		return result;
 	}
+
+    public boolean updatePrepSQL(PreparedStatement ps) throws SQLException,
+            ClassNotFoundException {
+        if (!checkConnection()) {
+            openConnection();
+        }
+
+        boolean result = ps.execute();
+
+        return result;
+    }
 }

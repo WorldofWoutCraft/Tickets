@@ -1,10 +1,10 @@
 CREATE TABLE comments (
   ticketid int NOT NULL,
-  userid int NOT NULL,
+  useruuid int NOT NULL,
   date datetime NOT NULL,
   comment varchar(255) NOT NULL,
   FOREIGN KEY(ticketid) REFERENCES tickets(ticketid),
-  FOREIGN KEY(userid) REFERENCES users (userid)
+  FOREIGN KEY(useruuid) REFERENCES users (uuid)
 );
 
 CREATE TABLE locations (
@@ -20,9 +20,9 @@ CREATE TABLE locations (
 
 CREATE TABLE solvers (
   ticketid int NOT NULL,
-  userid int NOT NULL,
+  useruuid int NOT NULL,
   FOREIGN KEY(ticketid) REFERENCES tickets (ticketid),
-  FOREIGN KEY(userid) REFERENCES users (userid)
+  FOREIGN KEY(useruuid) REFERENCES users (uuid)
 );
 
 CREATE TABLE tickets (
@@ -30,19 +30,18 @@ CREATE TABLE tickets (
   ticketstatus varchar(50) NOT NULL,
   tickettype varchar(50) NOT NULL,
   description varchar(255) NOT NULL,
-  ownerid int NOT NULL,
+  owneruuid int NOT NULL,
   dateasked datetime NOT NULL,
   dateclosed datetime NOT NULL,
   priority int NOT NULL,
   locationid int NOT NULL,
   PRIMARY KEY(ticketid),
   FOREIGN KEY(locationid) REFERENCES locations (locationid),
-  FOREIGN KEY(ownerid) REFERENCES users(userid)
+  FOREIGN KEY(owneruuid) REFERENCES users(uuid)
 );
 
 CREATE TABLE users (
-  userid int NOT NULL,
-  uuid int NOT NULL,
+  uuid VARCHAR(100) NOT NULL,
   name int NOT NULL,
-  PRIMARY KEY(userid)
+  PRIMARY KEY(uuid)
 );

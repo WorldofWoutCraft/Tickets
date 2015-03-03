@@ -222,14 +222,8 @@ public class TicketManager {
 
     public boolean isTicketAvailable(Player p) {
         for(Ticket t : tickets.values()){
-            if(t.getStatus() == TicketStatus.NEW || t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF){
-                if(t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF){
-                    if(t.getSolvers().contains(p.getUniqueId())){
-                        return true;
-                    }
-                } else {
-                    return true;
-                }
+            if(t.getStatus() == TicketStatus.NEW){
+                return true;
             }
         }
         return false;
