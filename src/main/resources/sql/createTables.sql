@@ -3,8 +3,7 @@ CREATE TABLE comments (
   userid int NOT NULL,
   date datetime NOT NULL,
   comment varchar(255) NOT NULL,
-  KEY ticketid (ticketid),
-  KEY userid (userid)
+  PRIMARY KEY (ticketid)
 );
 
 CREATE TABLE locations (
@@ -20,9 +19,7 @@ CREATE TABLE locations (
 
 CREATE TABLE solvers (
   ticketid int NOT NULL,
-  userid int NOT NULL,
-  KEY ticketid (ticketid),
-  KEY userid (userid)
+  userid int NOT NULL
 );
 
 CREATE TABLE tickets (
@@ -35,28 +32,23 @@ CREATE TABLE tickets (
   dateclosed datetime NOT NULL,
   priority int NOT NULL,
   locationid int NOT NULL,
-  PRIMARY KEY (ticketid),
-  KEY ownerid (ownerid),
-  KEY locationid (locationid)
+  PRIMARY KEY (ticketid)
 );
 
 CREATE TABLE users (
   userid int NOT NULL,
   uuid int NOT NULL,
   name int NOT NULL,
-  PRIMARY KEY (userid),
-  KEY userid (userid)
+  PRIMARY KEY (userid)
 );
 
 
-ALTER TABLE comments
-ADD CONSTRAINT comments_ticket FOREIGN KEY (ticketid) REFERENCES tickets (ticketid) ON DELETE CASCADE ON UPDATE CASCADE,
-ADD CONSTRAINT comments_user FOREIGN KEY (userid) REFERENCES users (userid) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE solvers
-ADD CONSTRAINT ticket_user_ticket FOREIGN KEY (ticketid) REFERENCES tickets (ticketid) ON DELETE CASCADE ON UPDATE CASCADE,
-ADD CONSTRAINT ticket_user_user FOREIGN KEY (userid) REFERENCES users (userid) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE comments ADD CONSTRAINT comments_ticket FOREIGN KEY REFERENCES tickets(ticketid) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE comments ADD CONSTRAINT comments_user FOREIGN KEY REFERENCES users (userid) ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE tickets
-ADD CONSTRAINT ticketlocation FOREIGN KEY (locationid) REFERENCES locations (locationid) ON DELETE CASCADE ON UPDATE CASCADE,
-ADD CONSTRAINT ticketowner FOREIGN KEY (ownerid) REFERENCES users (userid) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE solvers ADD CONSTRAINT ticket_user_ticket FOREIGN KEY REFERENCES tickets (ticketid) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE solvers ADD CONSTRAINT ticket_user_user FOREIGN KEY REFERENCES users (userid) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE tickets ADD CONSTRAINT ticketlocation FOREIGN KEY REFERENCES locations (locationid) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE tickets ADD CONSTRAINT ticketowner FOREIGN KEY REFERENCES users (userid) ON DELETE CASCADE ON UPDATE CASCADE;
