@@ -1,6 +1,8 @@
 package com.woutwoot.tickets.ticket;
 
 import com.woutwoot.tickets.TicketsException;
+import com.woutwoot.tickets.comment.Comment;
+import com.woutwoot.tickets.comment.SystemCommentSender;
 import com.woutwoot.tickets.tools.Vars;
 import mkremins.fanciful.FancyMessage;
 import org.bukkit.ChatColor;
@@ -14,7 +16,7 @@ import java.util.*;
  * @author woutwoot
  *         Created by on 1/01/2015 - 22:00.
  */
-public class Ticket implements Comparable<Ticket>{
+public class Ticket implements Comparable<Ticket> {
 
     private TicketStatus status = TicketStatus.NEW;
     private TicketType type = TicketType.GENERAL;
@@ -26,13 +28,13 @@ public class Ticket implements Comparable<Ticket>{
     private String ownerName;
 
     private Set<UUID> solvers = new HashSet<>();
-    private Map<Date, String> comments = new TreeMap<>();
+    private Map<Date, Comment> comments = new TreeMap<>();
 
     private Date dateAsked = new Date();
     private Date dateClosed = null;
 
     //-5 low, 5 high (Standard = 0)
-    private int priority;
+    private short priority;
 
     private Location location;
 
@@ -42,44 +44,12 @@ public class Ticket implements Comparable<Ticket>{
         this.ownerUUID = owner.getUniqueId();
         this.ownerName = owner.getName();
         this.location = owner.getLocation().clone();
-        this.comments.put(new Date(), "Ticket opened by " + ownerName + ".");
-    }
-
-    /**
-     * Sets the description for this ticket. This will typically be a question.
-     * @param description
-     * @throws TicketsException
-     */
-    public void setDescription(String description) throws TicketsException {
-        this.description = description;
-    }
-
-    /**
-     * Sets the priority of this ticket.
-     * @param priority Number between -5 and 5 where 5 is very high priority.
-     * @throws TicketsException when not between -5 and 5
-     */
-    public void setPriority(int priority) throws TicketsException {
-        if(priority < -5 || priority > 5){
-            throw new TicketsException("Priority must be between -5 and 5.");
-        }
-        this.priority = priority;
-    }
-
-    /**
-     * Sets the current status for this ticket.
-     * @param status status to set.
-     * @throws TicketsException
-     */
-    private void setStatus(TicketStatus status) throws TicketsException {
-        if(status == null){
-            throw new TicketsException("Status may not be null.");
-        }
-        this.status = status;
+        this.comments.put(new Date(), new Comment(ownerUUID, "Ticket opened by {sender}."));
     }
 
     /**
      * Gets the id for this ticket.
+     *
      * @return Integer id
      */
     public int getId() {
@@ -90,8 +60,31 @@ public class Ticket implements Comparable<Ticket>{
         return status;
     }
 
+    /**
+     * Sets the current status for this ticket.
+     *
+     * @param status status to set.
+     * @throws TicketsException
+     */
+    private void setStatus(TicketStatus status) throws TicketsException {
+        if (status == null) {
+            throw new TicketsException("Status may not be null.");
+        }
+        this.status = status;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Sets the description for this ticket. This will typically be a question.
+     *
+     * @param description
+     * @throws TicketsException
+     */
+    public void setDescription(String description) throws TicketsException {
+        this.description = description;
     }
 
     public UUID getOwnerUUID() {
@@ -106,7 +99,7 @@ public class Ticket implements Comparable<Ticket>{
         return solvers;
     }
 
-    public Map<Date, String> getComments() {
+    public Map<Date, Comment> getComments() {
         return comments;
     }
 
@@ -123,26 +116,40 @@ public class Ticket implements Comparable<Ticket>{
     }
 
     /**
+     * Sets the priority of this ticket.
+     *
+     * @param priority Number between -5 and 5 where 5 is very high priority.
+     * @throws TicketsException when not between -5 and 5
+     */
+    public void setPriority(short priority) throws TicketsException {
+        if (priority < -5 || priority > 5) {
+            throw new TicketsException("Priority must be between -5 and 5.");
+        }
+        this.priority = priority;
+    }
+
+    /**
      * Changes the status for this ticket and logs a message to the comments section.
+     *
      * @param status
      * @param changer
      * @throws TicketsException
      */
-    public void changeStatus(TicketStatus status, String changer) throws TicketsException {
-        if(status == null || changer == null || changer.isEmpty()){
+    public void changeStatus(TicketStatus status, UUID changer) throws TicketsException {
+        if (status == null || changer == null) {
             throw new TicketsException("Can't change status. (null?)");
         }
         this.setStatus(status);
-        if(status == TicketStatus.CLOSED){
-            addComment("Ticket closed by " + changer + ".");
-        }else if(status == TicketStatus.ASSIGNED_TO_STAFF){
-            addComment("Ticket assigned to " + changer + ".");
-        }else{
-            addComment("Status changed to " + status.toString() + " by " + changer + ".");
+        if (status == TicketStatus.CLOSED) {
+            addComment(changer, "Ticket closed by {sender}.");
+        } else if (status == TicketStatus.ASSIGNED_TO_STAFF) {
+            addComment(changer, "Ticket assigned to {sender}.");
+        } else {
+            addComment(changer, "Status changed to " + status.toString() + " by {sender}.");
         }
     }
 
-    public void close(String closer) {
+    public void close(UUID closer) {
         this.dateClosed = new Date();
         this.changeStatus(TicketStatus.CLOSED, closer);
     }
@@ -164,11 +171,18 @@ public class Ticket implements Comparable<Ticket>{
         return id;
     }
 
-    public void addComment(String comment) throws TicketsException {
-        if(comment == null){
+    public void addComment(UUID uuid, String comment) throws TicketsException {
+        if (comment == null) {
             throw new TicketsException("Comment can not be null.");
         }
-        comments.put(new Date(), comment);
+        comments.put(new Date(), new Comment(uuid, comment));
+    }
+
+    public void addComment(String comment) throws TicketsException {
+        if (comment == null) {
+            throw new TicketsException("Comment can not be null.");
+        }
+        comments.put(new Date(), new Comment(new SystemCommentSender(), comment));
     }
 
     public TicketType getType() {
@@ -191,7 +205,7 @@ public class Ticket implements Comparable<Ticket>{
         sender.sendMessage(gold + "Status: " + getStatus());
         sender.sendMessage(gold + "Type: " + getType());
         sender.sendMessage(red + Vars.getTitle("Comments"));
-        for(Date d : comments.keySet()){
+        for (Date d : comments.keySet()) {
             sender.sendMessage(red + "" + Vars.dateFormat.format(d) + " - " + gold + comments.get(d));
         }
         sender.sendMessage(red + Vars.getTitle("Actions"));
@@ -208,7 +222,7 @@ public class Ticket implements Comparable<Ticket>{
 
     @Override
     public int compareTo(Ticket t) {
-        if(t != null){
+        if (t != null) {
             return dateAsked.compareTo(t.dateAsked);
         }
         return 0;
@@ -220,5 +234,30 @@ public class Ticket implements Comparable<Ticket>{
 
     public void addSolver(Player player) {
         solvers.add(player.getUniqueId());
+    }
+
+    public void close() {
+        this.dateClosed = new Date();
+        this.changeStatus(TicketStatus.CLOSED);
+    }
+
+    /**
+     * Changes the status for this ticket and logs a message to the comments section.
+     *
+     * @param status
+     * @throws TicketsException
+     */
+    public void changeStatus(TicketStatus status) throws TicketsException {
+        if (status == null) {
+            throw new TicketsException("Can't change status. (null?)");
+        }
+        this.setStatus(status);
+        if (status == TicketStatus.CLOSED) {
+            addComment("Ticket closed by {sender}.");
+        } else if (status == TicketStatus.ASSIGNED_TO_STAFF) {
+            addComment("Ticket assigned to {sender}.");
+        } else {
+            addComment("Status changed to " + status.toString() + " by {sender}.");
+        }
     }
 }

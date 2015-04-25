@@ -15,46 +15,65 @@ public class TicketCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if(cmd.getName().equalsIgnoreCase("ticket")){
-            if(args.length == 2){
-                if(args[0].equalsIgnoreCase("info")){
+        if (cmd.getName().equalsIgnoreCase("ticket")) {
+            if (args.length == 2) {
+                if (args[0].equalsIgnoreCase("info")) {
                     int id = Integer.parseInt(args[1]);
                     Main.getManager().sendInfo(id, sender);
-                }else if(args[0].equalsIgnoreCase("tp") || args[0].equalsIgnoreCase("teleport")){
+                } else if (args[0].equalsIgnoreCase("tp") || args[0].equalsIgnoreCase("teleport")) {
                     int id = Integer.parseInt(args[1]);
-                    if(sender instanceof Player){
+                    if (sender instanceof Player) {
                         ((Player) sender).teleport(Main.getManager().getTicket(id).getLocation());
                         sender.sendMessage(Vars.tag + "You've been teleported to the ticket location.");
-                    }else{
+                    } else {
                         sender.sendMessage(Vars.tag + "You have to be a player to use this command.");
                     }
-                }else if(args[0].equalsIgnoreCase("close")){
+                } else if (args[0].equalsIgnoreCase("close")) {
                     int id = Integer.parseInt(args[1]);
-                    Main.getManager().closeTicket(id, sender.getName());
+                    if (sender instanceof Player) {
+                        Main.getManager().closeTicket(id, ((Player) sender).getUniqueId());
+                    } else {
+                        Main.getManager().closeTicket(id);
+                    }
                     sender.sendMessage(Vars.tag + "Ticket #" + id + " has been closed.");
-                }else if(args[0].equalsIgnoreCase("delete")){
+                } else if (args[0].equalsIgnoreCase("delete")) {
                     int id = Integer.parseInt(args[1]);
                     Main.getManager().deleteTicket(id);
                     sender.sendMessage(Vars.tag + "Ticket #" + id + " has been deleted.");
-                }else if(args[0].equalsIgnoreCase("take")){
+                } else if (args[0].equalsIgnoreCase("take")) {
                     int id = Integer.parseInt(args[1]);
-                    if(sender instanceof Player){
+                    if (sender instanceof Player) {
                         Main.getManager().takeTicket(id, (Player) sender);
                         sender.sendMessage(Vars.tag + "You've taken ticket #" + id + ".");
-                    }else{
+                    } else {
                         sender.sendMessage(Vars.tag + "You have to be a player to use this command.");
                     }
                 }
-            }else if(args.length == 1){
-                if(args[0].equalsIgnoreCase("listall")){
+            } else if (args.length == 1) {
+                if (args[0].equalsIgnoreCase("listall")) {
                     Main.getManager().sendFullList(sender);
-                }if(args[0].equalsIgnoreCase("list")){
+                }
+                if (args[0].equalsIgnoreCase("list")) {
                     Main.getManager().sendList(sender);
                 }
-            }else if(args.length > 2){
-                if(args[0].equalsIgnoreCase("comment") || args[0].equalsIgnoreCase("c")) {
+            } else if (args.length > 2) {
+                if (args[0].equalsIgnoreCase("comment") || args[0].equalsIgnoreCase("c")) {
                     int id = Integer.parseInt(args[1]);
-                    Main.getManager().addComment(id, "TODO"); //TODO: concat args for comment
+
+                    if (sender instanceof Player) {
+                        String comm = "";
+                        for (int i = 1; i < args.length; i++) {
+                            if (i == args.length - 1) {
+                                comm += args[i];
+                            } else
+                                comm += args[i] + " ";
+                        }
+                        Main.getManager().addComment(id, ((Player) sender).getUniqueId(), comm);
+                    } else {
+                        Main.getManager().addComment(id, args[1]);
+                    }
+                } else {
+                    //TODO: Create ticket!
                 }
             }
             return true;

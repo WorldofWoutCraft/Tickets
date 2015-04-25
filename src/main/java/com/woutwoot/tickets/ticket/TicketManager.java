@@ -1,10 +1,8 @@
-package com.woutwoot.tickets;
+package com.woutwoot.tickets.ticket;
 
-import com.woutwoot.tickets.db.TicketDB;
+import com.woutwoot.tickets.Main;
+import com.woutwoot.tickets.TicketsException;
 import com.woutwoot.tickets.events.TicketCreateEvent;
-import com.woutwoot.tickets.ticket.Ticket;
-import com.woutwoot.tickets.ticket.TicketStatus;
-import com.woutwoot.tickets.ticket.TicketType;
 import com.woutwoot.tickets.tools.Vars;
 import mkremins.fanciful.FancyMessage;
 import org.apache.commons.lang.WordUtils;
@@ -21,13 +19,12 @@ import java.util.*;
  */
 public class TicketManager {
 
-    TicketDB ticketDB = new TicketDB();
     private Map<Integer, Ticket> tickets = new HashMap<>();
     private int currentID = 1;
 
     public TicketManager(){
-        //TODO: Make this load and save from and to config.
-        //currentID = Main.getInstance().getConfig().getInt("currentTicketID");
+        Main.getInstance().getConfig().addDefault("currentTicketID", 1);
+        currentID = Main.getInstance().getConfig().getInt("currentTicketID");
     }
 
     /**
@@ -55,7 +52,6 @@ public class TicketManager {
         //Call custom event
         TicketCreateEvent event = new TicketCreateEvent(owner, ticket);
         Bukkit.getServer().getPluginManager().callEvent(event);
-
         currentID++;
     }
 
@@ -104,7 +100,7 @@ public class TicketManager {
      * @param id
      * @throws TicketsException
      */
-    public void closeTicket(int id, String closer) throws TicketsException {
+    public void closeTicket(int id, UUID closer) throws TicketsException {
         Ticket t = getTicket(id);
         t.close(closer);
     }
@@ -124,9 +120,9 @@ public class TicketManager {
      * @param comment
      * @throws TicketsException
      */
-    public void addComment(int id, String comment) throws TicketsException {
+    public void addComment(int id, UUID sender, String comment) throws TicketsException {
         Ticket t = getTicket(id);
-        t.addComment(comment);
+        t.addComment(sender, comment);
     }
 
     /**
@@ -135,17 +131,17 @@ public class TicketManager {
      * @param priority
      * @throws TicketsException
      */
-    public void setTicketPriority(int id, int priority) throws TicketsException {
+    public void setTicketPriority(int id, short priority) throws TicketsException {
         Ticket t = getTicket(id);
         t.setPriority(priority);
     }
 
     public void saveTickets() {
-        ticketDB.saveTickets(tickets);
+        //TODO
     }
 
     public void loadTickets() {
-        tickets = ticketDB.loadTickets();
+        //TODO
     }
 
     /**
@@ -198,7 +194,7 @@ public class TicketManager {
         Ticket t = getTicket(id);
         t.addSolver(sender);
         if(t.getStatus() == TicketStatus.NEW){
-            t.changeStatus(TicketStatus.ASSIGNED_TO_STAFF, sender.getName());
+            t.changeStatus(TicketStatus.ASSIGNED_TO_STAFF, sender.getUniqueId());
         }
     }
 
@@ -243,5 +239,15 @@ public class TicketManager {
             }
         }
         return list;
+    }
+
+    public void closeTicket(int id) {
+        Ticket t = getTicket(id);
+        t.close();
+    }
+
+    public void addComment(int id, String comment) {
+        Ticket t = getTicket(id);
+        t.addComment(comment);
     }
 }
