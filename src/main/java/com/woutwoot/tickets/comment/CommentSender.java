@@ -7,7 +7,9 @@ package com.woutwoot.tickets.comment;
 public interface CommentSender {
 
     String getSenderName();
+
     boolean isPlayer();
+
     boolean isSystem();
 
 }

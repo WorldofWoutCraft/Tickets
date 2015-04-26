@@ -6,6 +6,6 @@ package com.woutwoot.tickets.ticket;
  */
 public enum TicketStatus {
 
-    NEW,ASSIGNED_TO_STAFF,CLOSED,REJECTED,WAITING;
+    NEW, ASSIGNED_TO_STAFF, CLOSED, REJECTED, WAITING
 
 }

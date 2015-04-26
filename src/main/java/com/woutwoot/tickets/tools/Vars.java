@@ -15,14 +15,14 @@ public class Vars {
 
     public static String getTitle(String tickets) {
         int maxLength = 55;
-        if(tickets.contains("i") || tickets.contains("l") || tickets.contains(".")){
+        if (tickets.contains("i") || tickets.contains("l") || tickets.contains(".")) {
             maxLength++;
         }
         int textLength = tickets.length() + 2;
         int sideChars = (maxLength - textLength) / 2;
 
         String side = "";
-        for (int i = 0; i < sideChars; i++){
+        for (int i = 0; i < sideChars; i++) {
             side += "-";
         }
 
@@ -33,24 +33,24 @@ public class Vars {
     public static String getEndLine() {
         int maxLength = 51;
         String line = "";
-        for (int i = 0; i < maxLength; i++){
+        for (int i = 0; i < maxLength; i++) {
             line += "-";
         }
         return line;
     }
 
     public static String trimToMax(String s) {
-        if(s.length() > 54){
+        if (s.length() > 54) {
             return s.substring(0, 51) + "...";
-        }else{
+        } else {
             return s;
         }
     }
 
     public static String trimToMaxForScoreboard(String s) {
-        if(s.length() > 44){
+        if (s.length() > 44) {
             return s.substring(0, 41) + "...";
-        }else{
+        } else {
             return s;
         }
     }

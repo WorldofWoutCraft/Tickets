@@ -16,16 +16,16 @@ public class ReportCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if(cmd.getName().equalsIgnoreCase("report")){
+        if (cmd.getName().equalsIgnoreCase("report")) {
             Player p;
-            if(sender instanceof Player){
+            if (sender instanceof Player) {
                 p = (Player) sender;
-            }else{
+            } else {
                 sender.sendMessage(Vars.tag + "You have to be a player to use this command.");
                 return true;
             }
             String desc = "";
-            for(String arg : args){
+            for (String arg : args) {
                 desc += arg + " ";
             }
             Main.getManager().createTicket(p, desc, TicketType.REPORT);

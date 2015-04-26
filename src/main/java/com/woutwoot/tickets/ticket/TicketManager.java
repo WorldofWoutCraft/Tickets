@@ -22,29 +22,40 @@ public class TicketManager {
     private Map<Integer, Ticket> tickets = new HashMap<>();
     private int currentID = 1;
 
-    public TicketManager(){
+    public TicketManager() {
         Main.getInstance().getConfig().addDefault("currentTicketID", 1);
         currentID = Main.getInstance().getConfig().getInt("currentTicketID");
     }
 
     /**
      * Creates a new ticket.
+     *
      * @param owner The owner (asker) for the ticket that is being created.
-     * @param desc The description for the ticket. (The question)
-     * @param type The type of the ticket. For example grief, ...
+     * @param desc  The description for the ticket. (The question)
+     */
+    public void createTicket(Player owner, String desc) throws TicketsException {
+        createTicket(owner, desc, null);
+    }
+
+    /**
+     * Creates a new ticket.
+     *
+     * @param owner The owner (asker) for the ticket that is being created.
+     * @param desc  The description for the ticket. (The question)
+     * @param type  The type of the ticket. For example grief, ...
      */
     public void createTicket(Player owner, String desc, TicketType type) throws TicketsException {
-        if(tickets.containsKey(currentID)){
+        if (tickets.containsKey(currentID)) {
             throw new TicketsException("Problem while creating ticket.");
         }
-        if(owner == null){
+        if (owner == null) {
             throw new TicketsException("Owner may not be null!");
         }
-        if(desc == null || desc.isEmpty()){
+        if (desc == null || desc.isEmpty()) {
             throw new TicketsException("Description may not be null or empty.");
         }
         Ticket ticket = new Ticket(currentID, owner, desc);
-        if(type != null){
+        if (type != null) {
             ticket.setType(type);
         }
         this.tickets.put(currentID, ticket);
@@ -56,23 +67,15 @@ public class TicketManager {
     }
 
     /**
-     * Creates a new ticket.
-     * @param owner The owner (asker) for the ticket that is being created.
-     * @param desc The description for the ticket. (The question)
-     */
-    public void createTicket(Player owner, String desc) throws TicketsException {
-        createTicket(owner, desc, null);
-    }
-
-    /**
      * Gets all open tickets for a user. This means dateClosed is null.
+     *
      * @param owner The player to search tickets for.
      * @return List of tickets for this player.
      */
-    public List<Ticket> getOpenTickets(Player owner){
+    public List<Ticket> getOpenTickets(Player owner) {
         List<Ticket> ticketsList = new ArrayList<>();
-        for(Ticket t : tickets.values()){
-            if(t.getDateClosed() == null) {
+        for (Ticket t : tickets.values()) {
+            if (t.getDateClosed() == null) {
                 if (t.getOwnerUUID().equals(owner.getUniqueId())) {
                     ticketsList.add(t);
                 }
@@ -82,21 +85,8 @@ public class TicketManager {
     }
 
     /**
-     * Gets a ticket by id.
-     * @param id
-     * @return
-     * @throws TicketsException
-     */
-    public Ticket getTicket(int id) throws TicketsException {
-        Ticket t = this.tickets.get(id);
-        if(t == null){
-            throw new TicketsException("Ticket not found!");
-        }
-        return t;
-    }
-
-    /**
      * Closes a ticket.
+     *
      * @param id
      * @throws TicketsException
      */
@@ -106,7 +96,23 @@ public class TicketManager {
     }
 
     /**
+     * Gets a ticket by id.
+     *
+     * @param id
+     * @return
+     * @throws TicketsException
+     */
+    public Ticket getTicket(int id) throws TicketsException {
+        Ticket t = this.tickets.get(id);
+        if (t == null) {
+            throw new TicketsException("Ticket not found!");
+        }
+        return t;
+    }
+
+    /**
      * Completely deletes a ticket from the database. Can be used to remove spam.
+     *
      * @param id
      * @throws TicketsException
      */
@@ -116,6 +122,7 @@ public class TicketManager {
 
     /**
      * Adds a comment to a ticket.
+     *
      * @param id
      * @param comment
      * @throws TicketsException
@@ -125,8 +132,14 @@ public class TicketManager {
         t.addComment(sender, comment);
     }
 
+    public void addComment(int id, String comment) {
+        Ticket t = getTicket(id);
+        t.addComment(comment);
+    }
+
     /**
      * Sets the priority for a ticket.
+     *
      * @param id
      * @param priority
      * @throws TicketsException
@@ -146,6 +159,7 @@ public class TicketManager {
 
     /**
      * Sends information about a ticket to the sender.
+     *
      * @param id
      * @param sender
      * @throws TicketsException
@@ -157,12 +171,13 @@ public class TicketManager {
 
     /**
      * Sends chat message with a ticket list (all tickets) to sender.
+     *
      * @param sender
      */
     public void sendFullList(CommandSender sender) {
         ChatColor r = ChatColor.DARK_RED;
         sender.sendMessage(r + Vars.getTitle("List of tickets"));
-        for(Ticket t : getTicketsListFIFO()){
+        for (Ticket t : getTicketsListFIFO()) {
             FancyMessage msg = new FancyMessage();
             msg.color(ChatColor.GOLD);
             msg.text(Vars.trimToMax("- # " + t.getId() + "" + t.getStatus() + " " + t.getType() + " - " + t.getDescription()));
@@ -175,9 +190,10 @@ public class TicketManager {
 
     /**
      * Gets a list of tickets. Ordered by FIFO.
+     *
      * @return
      */
-    public List<Ticket> getTicketsListFIFO(){
+    public List<Ticket> getTicketsListFIFO() {
         List list = new LinkedList();
         list.addAll(tickets.values());
         Collections.sort(list);
@@ -185,52 +201,30 @@ public class TicketManager {
     }
 
     /**
-     * Assigns this ticket to a staff member. One ticket can be handled by one or more staff members.
-     * @param id
-     * @param sender
-     * @throws TicketsException
-     */
-    public void takeTicket(int id, Player sender) throws TicketsException {
-        Ticket t = getTicket(id);
-        t.addSolver(sender);
-        if(t.getStatus() == TicketStatus.NEW){
-            t.changeStatus(TicketStatus.ASSIGNED_TO_STAFF, sender.getUniqueId());
-        }
-    }
-
-    /**
      * Sends chat message with a ticket list (only open) to sender.
+     *
      * @param sender
      */
     public void sendList(CommandSender sender) {
         ChatColor r = ChatColor.DARK_RED;
         sender.sendMessage(r + Vars.getTitle("List of tickets"));
-        for(Ticket t : getTicketsForPlayer((Player) sender)){
-                FancyMessage msg = new FancyMessage();
-                msg.color(ChatColor.GOLD);
-                msg.text(Vars.trimToMax("- # " + t.getId() + "" + t.getStatus() + " " + t.getType() + " - " + t.getDescription()));
-                msg.tooltip(ChatColor.AQUA + "Created by: ", " " + t.getOwnerName(), ChatColor.AQUA + "Description: ", " " + WordUtils.wrap(t.getDescription(), 40, "\n ", true));
-                msg.command("/ticket info " + t.getId());
-                msg.send(sender);
+        for (Ticket t : getTicketsForPlayer((Player) sender)) {
+            FancyMessage msg = new FancyMessage();
+            msg.color(ChatColor.GOLD);
+            msg.text(Vars.trimToMax("- # " + t.getId() + "" + t.getStatus() + " " + t.getType() + " - " + t.getDescription()));
+            msg.tooltip(ChatColor.AQUA + "Created by: ", " " + t.getOwnerName(), ChatColor.AQUA + "Description: ", " " + WordUtils.wrap(t.getDescription(), 40, "\n ", true));
+            msg.command("/ticket info " + t.getId());
+            msg.send(sender);
         }
         sender.sendMessage(r + Vars.getEndLine());
     }
 
-    public boolean isTicketAvailable(Player p) {
-        for(Ticket t : tickets.values()){
-            if(t.getStatus() == TicketStatus.NEW){
-                return true;
-            }
-        }
-        return false;
-    }
-
     public List<Ticket> getTicketsForPlayer(Player p) {
         List<Ticket> list = new ArrayList<>();
-        for(Ticket t : tickets.values()){
-            if(t.getStatus() == TicketStatus.NEW || t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF){
-                if(t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF){
-                    if(t.getSolvers().contains(p.getUniqueId())){
+        for (Ticket t : tickets.values()) {
+            if (t.getStatus() == TicketStatus.NEW || t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF) {
+                if (t.getStatus() == TicketStatus.ASSIGNED_TO_STAFF) {
+                    if (t.getSolvers().contains(p.getUniqueId())) {
                         list.add(t);
                     }
                 } else {
@@ -241,13 +235,32 @@ public class TicketManager {
         return list;
     }
 
+    /**
+     * Assigns this ticket to a staff member. One ticket can be handled by one or more staff members.
+     *
+     * @param id
+     * @param sender
+     * @throws TicketsException
+     */
+    public void takeTicket(int id, Player sender) throws TicketsException {
+        Ticket t = getTicket(id);
+        t.addSolver(sender);
+        if (t.getStatus() == TicketStatus.NEW) {
+            t.changeStatus(TicketStatus.ASSIGNED_TO_STAFF, sender.getUniqueId());
+        }
+    }
+
+    public boolean isTicketAvailable(Player p) {
+        for (Ticket t : tickets.values()) {
+            if (t.getStatus() == TicketStatus.NEW) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void closeTicket(int id) {
         Ticket t = getTicket(id);
         t.close();
-    }
-
-    public void addComment(int id, String comment) {
-        Ticket t = getTicket(id);
-        t.addComment(comment);
     }
 }

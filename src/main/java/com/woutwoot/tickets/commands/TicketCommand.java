@@ -18,7 +18,13 @@ public class TicketCommand implements CommandExecutor {
         if (cmd.getName().equalsIgnoreCase("ticket")) {
             if (args.length == 2) {
                 if (args[0].equalsIgnoreCase("info")) {
-                    int id = Integer.parseInt(args[1]);
+                    int id;
+                    try {
+                        id = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage(Vars.tag + "That's not a valid number!");
+                        return true;
+                    }
                     Main.getManager().sendInfo(id, sender);
                 } else if (args[0].equalsIgnoreCase("tp") || args[0].equalsIgnoreCase("teleport")) {
                     int id = Integer.parseInt(args[1]);

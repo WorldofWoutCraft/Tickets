@@ -19,9 +19,9 @@ import java.util.List;
 public class TicketCreateListener implements Listener {
 
     @EventHandler
-    public void onTiketCreate(TicketCreateEvent event){
-        for(Player p : getOnlineOps()){
-            if(!p.equals(event.getPlayer())) {
+    public void onTiketCreate(TicketCreateEvent event) {
+        for (Player p : getOnlineOps()) {
+            if (!p.equals(event.getPlayer())) {
                 FancyMessage msg = new FancyMessage(Vars.tag + "A new ticket was created! Click here to view the ticket.");
                 msg.tooltip(ChatColor.GOLD + "Click here to view ticket.");
                 msg.command("/ticket info " + event.getTicket().getId());
@@ -30,10 +30,10 @@ public class TicketCreateListener implements Listener {
         }
     }
 
-    public List<Player> getOnlineOps(){
+    public List<Player> getOnlineOps() {
         List<Player> pls = new ArrayList<>();
-        for(Player p : Bukkit.getServer().getOnlinePlayers()){
-            if(p.isOp()){
+        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+            if (p.isOp()) {
                 pls.add(p);
             }
         }
